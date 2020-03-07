@@ -1,7 +1,10 @@
 import os
 import numpy as np
 
-from preprocess import parse
+from preprocess import (
+    parse_data
+
+)
 
 from HMM import unsupervised_HMM
 from HMM_helper import (
@@ -14,14 +17,14 @@ from HMM_helper import (
 )
 
 # pre-porcessing
-obs, obs_map = parse(text)
+quatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word = parse_data('data/constitution.txt')
 
 # train
-hmm = unsupervised_HMM(obs, n_states=10, N_iters=100)
+hmm = unsupervised_HMM(quatrain_lists, n_states=10, N_iters=100)
 
 # sample naive sentence
 print('Sample Naive Sentence:\n====================')
-print(sample_sentence(hmm, obs_map, n_words=10))
+print(sample_sentence(hmm, word_to_int, n_words=10))
 
 def get_naive_sonnet():
     sonnet = ''
