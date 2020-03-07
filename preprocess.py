@@ -22,6 +22,7 @@ def parse_data(file_name):
     quatrain_lists = []
     volta_lists = []
     couplet_lists = []
+    poem_lists = []
     word_to_int = {}
     int_to_word = {}
     current_word_idx = 0
@@ -39,9 +40,10 @@ def parse_data(file_name):
             quatrain_list = []
             volta_list = []
             couplet_list = []
+            poem_list = []
 
             for i in range(14):
-                
+
                 line = lines[current_line_idx].strip()
                 current_line_idx += 1
 
@@ -62,11 +64,14 @@ def parse_data(file_name):
                     volta_list.extend(observations)
                 else:
                     couplet_list.extend(observations)
+                poem_list.extend(observations)
+
             quatrain_lists.append(quatrain_list)
             volta_lists.append(volta_list)
             couplet_lists.append(couplet_list)
+            poem_lists.append(poem_list)
 
-    return quatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word
+    return poem_lists, quatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word
 
 
 def syllables_interpreter(filename, word_id_dict):
