@@ -35,7 +35,13 @@ def parse_data(file_name):
         line = lines[current_line_idx].strip()
         current_line_idx += 1
         if line.isdigit():
+
+            quatrain_list = []
+            volta_list = []
+            couplet_list = []
+
             for i in range(14):
+                
                 line = lines[current_line_idx].strip()
                 current_line_idx += 1
 
@@ -51,11 +57,14 @@ def parse_data(file_name):
                     observations.append(word_to_int[word])
 
                 if 0 <= i < 8:
-                    quatrain_lists.append(observations)
+                    quatrain_list.extend(observations)
                 elif i < 12:
-                    volta_lists.append(observations)
+                    volta_list.extend(observations)
                 else:
-                    couplet_lists.append(observations)
+                    couplet_list.extend(observations)
+            quatrain_lists.append(quatrain_list)
+            volta_lists.append(volta_list)
+            couplet_lists.append(couplet_list)
 
     return quatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word
 
