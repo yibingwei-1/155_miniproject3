@@ -22,7 +22,7 @@ from HMM_helper import (
 )
 
 # pre-porcessing
-poem_lists, uatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word = parse_data('data/shakespeare.txt')
+poem_lists, uatrain_lists, volta_lists, couplet_lists, syllabus_lists, word_to_int, int_to_word = parse_data('data/shakespeare.txt')
 
 # train
 hmm = unsupervised_HMM(poem_lists, n_states=20, N_iters=10)
@@ -39,8 +39,8 @@ def write_naive_sonnet():
         sonnet += sample_sentence(hmm, word_to_int, 10) + ',\n'
     return sonnet
 
-print('Naive Sonet:\n====================')
-print (write_naive_sonnet() + '\n\n\n\n')
+# print('Naive Sonet:\n====================')
+# print (write_naive_sonnet() + '\n\n\n\n')
 
 # Poetry Generation
 
@@ -59,12 +59,12 @@ def write_rhyming_sonnet():
             count += 1
 
     # get the structure
-    structure = get_structure()
+    structure = random.choice(syllabus_lists)
     for i,syllable in enumerate(structure):
         if i % 4 == 0:
             sonnet += '\n'
         sonnet += random.choice(phoneme_sentences[syllable]) + ',\n'
-     return sonnet
+    return sonnet
 
 print('Rhyming Sonet:\n====================')
 print (write_rhyming_sonnet() + '\n\n\n\n')
