@@ -6,8 +6,15 @@ from nltk.corpus import cmudict
 #     nltk.download('cmudict')
 
 
-def get_last_syllable(word):
-    syllabus = cmudict.dict().get(word, [])
+def get_last_word(sentence):
+    sentence = sentence.replace('.', '').replace('?', '')
+    last_word = sentence.split()[-1]
+    return last_word
+
+
+def get_last_syllable(sentence):
+    last_word = get_last_word(sentence)
+    syllabus = cmudict.dict().get(last_word, [])
     return syllabus[0][-1] if syllabus else ''
 
 
