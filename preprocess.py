@@ -1,5 +1,6 @@
 import HMM
 import HMM_helper
+import write_poems
 
 
 def parse_line(line):
@@ -23,6 +24,7 @@ def parse_data(file_name):
     volta_lists = []
     couplet_lists = []
     poem_lists = []
+    syllable_lists = []
     word_to_int = {}
     int_to_word = {}
     current_word_idx = 0
@@ -41,6 +43,7 @@ def parse_data(file_name):
             volta_list = []
             couplet_list = []
             poem_list = []
+            syllable_list = []
 
             for i in range(14):
 
@@ -51,12 +54,14 @@ def parse_data(file_name):
 
                 observations = []
 
-                for word in words:
+                for idx, word in enumerate(words):
                     if word not in word_to_int:
                         word_to_int[word] = current_word_idx
                         int_to_word[current_word_idx] = word
                         current_word_idx += 1
                     observations.append(word_to_int[word])
+                    if idx == len(words)-1:
+                        syllable_list.append(write_poems.get_last_syllable(word, 'word'))
 
                 if 0 <= i < 8:
                     quatrain_list.extend(observations)
@@ -64,14 +69,16 @@ def parse_data(file_name):
                     volta_list.extend(observations)
                 else:
                     couplet_list.extend(observations)
+
                 poem_list.extend(observations)
 
             quatrain_lists.append(quatrain_list)
             volta_lists.append(volta_list)
             couplet_lists.append(couplet_list)
             poem_lists.append(poem_list)
+            syllable_lists.append(syllable_list)
 
-    return poem_lists, quatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word
+    return poem_lists, quatrain_lists, volta_lists, couplet_lists, syllable_lists, word_to_int, int_to_word
 
 
 def syllables_interpreter(filename, word_id_dict):
