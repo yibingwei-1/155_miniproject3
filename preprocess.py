@@ -60,8 +60,8 @@ def parse_data(file_name):
                         int_to_word[current_word_idx] = word
                         current_word_idx += 1
                     observations.append(word_to_int[word])
-                    if idx == len(words)-1:
-                        syllable_list.append(write_poems.get_last_syllable(word, 'word'))
+                    # if idx == len(words)-1:
+                    #     syllable_list.append(write_poems.get_last_syllable(word, 'word'))
 
                 if 0 <= i < 8:
                     quatrain_list.extend(observations)
@@ -115,7 +115,7 @@ def syllables_interpreter(filename, word_id_dict):
 
 
 if __name__ == '__main__':
-    poem_lists, quatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word = parse_data('data/shakespeare.txt')
+    poem_lists, quatrain_lists, volta_lists, couplet_lists, syllable_lists, word_to_int, int_to_word = parse_data('data/shakespeare.txt')
     filename = "./data/Syllable_dictionary.txt"
     word_id_dict = {'true-telling': 5, 'unrespected': 1, 'heart\'s': 1}
     print(syllables_interpreter(filename, word_id_dict))
