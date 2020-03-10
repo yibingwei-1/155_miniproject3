@@ -1,12 +1,5 @@
-import nltk
 import os
 import extract_end_syllable
-from nltk.corpus import cmudict
-# try:
-#     nltk.data.find('cmudict')
-# except LookupError:
-#     nltk.download('cmudict')
-
 
 def get_last_word(sentence):
     '''
@@ -18,29 +11,29 @@ def get_last_word(sentence):
     return last_word
 
 
-def get_last_syllable(input, tag='sentence'):
+def get_last_syllable(input, word_syllable_dict, tag='sentence'):
     '''
 
     :param input: str, a word with tag being 'word' or a sentence with tag being 'sentence',
     :param tag: demonstrate the type of input, 'word' or 'sentence'
     :return: str, the last syllable of current sentence or word
     '''
-    if tag == 'sentence':
-        cur_word = get_last_word(input)
-    else:
-        cur_word = input
-    syllable = cmudict.dict().get(cur_word, [])
-    return syllable[0][-1] if syllable else ''
+    cur_word = get_last_word(input) if tag == 'sentence' else input
+    return word_syllable_dict.get(cur_word, '')
+
 
 def classify_sentence(sentences):
     sentence_class = {}
+    word_syllable_dict = read_word_syllable()
+
     for sentence in sentences:
-        sentence_end_syllable = get_last_syllable(sentence)
+        sentence_end_syllable = get_last_syllable(sentence, word_syllable_dict)
         print(sentence_end_syllable)
         print(sentence)
         print('----------------')
         sentence_class[sentence_end_syllable] = sentence
     return sentence_class
+
 
 def count_sentence_syllables(sentence, word_id_dict, syllables_dict):
     '''
@@ -61,7 +54,7 @@ def count_sentence_syllables(sentence, word_id_dict, syllables_dict):
     return syllable_count
 
 
-def read_syllable_from(syllable_path='./data/end_syllable.txt'):
+def read_syllable_template(syllable_path='./data/end_syllable.txt'):
     if not os.path.exists(syllable_path):
         extract_end_syllable.extract_syllable()
     file = open(syllable_path, 'r')
@@ -71,6 +64,18 @@ def read_syllable_from(syllable_path='./data/end_syllable.txt'):
         line = line.strip()
         syllable_list.append(line.split(" "))
     return syllable_list
+
+
+def read_word_syllable(syllable_path='./data/word_syllable.txt'):
+    if not os.path.exists(syllable_path):
+        extract_end_syllable.extract_syllable()
+    file = open(syllable_path, 'r')
+    lines = file.readlines()
+    word_syllable_dict = {}
+    for line in lines:
+        word, syl = line.strip().split(" ")
+        word_syllable_dict[word] = syl
+    return word_syllable_dict
 
 
 def truncate_sentence(sentence, word_id_dict, syllables_dict):
@@ -99,8 +104,3 @@ def truncate_sentence(sentence, word_id_dict, syllables_dict):
             return ""
         elif syllable_count + count_not_end < 10:
             syllable_count += count_not_end
-
-
-if __name__ == '__main__':
-    word = 'love'
-    print(get_last_syllable(word))
