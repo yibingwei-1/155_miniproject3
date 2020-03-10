@@ -6,96 +6,114 @@ import numpy as np
 import preprocess
 
 
-def preprocess_file(file_name):
-    poem_lists, quatrain_lists, volta_lists, couplet_lists, syllable_lists, word_to_int, int_to_word = preprocess.parse_data(file_name)
-    window_size = 10
-    vector_size = len(word_to_int)
+class LSTMGenerator(object):
 
-    total_sequence = []
-    for poem in poem_lists:
-        total_sequence.extend(poem)
+    def __init__(self):
+        self.word_to_int = {}
+        self.int_to_word = {}
 
-    X_raw = []
-    y_raw = []
-    for i in range(0, len(total_sequence) - window_size):
-        X_raw.append(total_sequence[i: i + window_size])
-        y_raw.append(total_sequence[i + window_size])
+    def preprocess_file(self, file_name):
+        poem_lists, quatrain_lists, volta_lists, couplet_lists, self.word_to_int, self.int_to_word = preprocess.parse_data(file_name)
+        window_size = 10
+        vector_size = len(self.word_to_int)
 
-    X = np.zeros((len(total_sequence) - window_size, window_size, vector_size))
-    y = np.zeros((len(total_sequence) - window_size, vector_size))
+        total_sequence = []
+        for poem in poem_lists:
+            total_sequence.extend(poem)
 
-    for i in range(0, len(total_sequence) - window_size):
-        y[i, y_raw[i]] = 1
-        for j in range(0, window_size):
-            X[i, j, X_raw[i][j]] = 1
+        X_raw = []
+        y_raw = []
+        for i in range(0, len(total_sequence) - window_size):
+            X_raw.append(total_sequence[i: i + window_size])
+            y_raw.append(total_sequence[i + window_size])
 
-    return X, y, window_size, vector_size
+        X = np.zeros((len(total_sequence) - window_size, window_size, vector_size))
+        y = np.zeros((len(total_sequence) - window_size, vector_size))
 
+        for i in range(0, len(total_sequence) - window_size):
+            y[i, y_raw[i]] = 1
+            for j in range(0, window_size):
+                X[i, j, X_raw[i][j]] = 1
 
-def train(file_name):
+        return X, y, window_size, vector_size
 
-    X, y, window_size, vector_size = preprocess_file(file_name)
+    def train(self, file_name):
 
-    input_data = Input(shape=(window_size, vector_size,))
+        X, y, window_size, vector_size = self.preprocess_file(file_name)
 
-    lstm = LSTM(
-        units=200,
-        activation='tanh',
-        recurrent_activation='sigmoid',
-        use_bias=True
-    )(input_data)
+        input_data = Input(shape=(window_size, vector_size,))
 
-    output = Dense(
-        units=vector_size,
-        activation='softmax'
-    )(lstm)
+        lstm = LSTM(
+            units=200,
+            activation='tanh',
+            recurrent_activation='sigmoid',
+            use_bias=True
+        )(input_data)
 
-    model = Model(input_data, output)
+        output = Dense(
+            units=vector_size,
+            activation='softmax'
+        )(lstm)
 
-    optimizer = RMSprop(learning_rate=0.01)
+        model = Model(input_data, output)
 
-    model.compile(
-        loss='categorical_crossentropy',
-        optimizer=optimizer
-    )
+        optimizer = RMSprop(learning_rate=0.01)
 
-    model.fit(
-        x=X,
-        y=y,
-        batch_size=16,
-        epochs=1
-    )
+        model.compile(
+            loss='categorical_crossentropy',
+            optimizer=optimizer
+        )
 
-    model.save('lstm.hdf5')
+        model.fit(
+            x=X,
+            y=y,
+            batch_size=16,
+            epochs=1
+        )
 
+        model.save('lstm.hdf5')
 
-def sample(preds, temperature=1.0):
-    # helper function to sample an index from a probability array
-    preds = np.asarray(preds).astype('float64')
-    preds = np.log(preds) / temperature
-    exp_preds = np.exp(preds)
-    preds = exp_preds / np.sum(exp_preds)
-    probas = np.random.multinomial(1, preds, 1)
-    return np.argmax(probas)
+    @staticmethod
+    def sample(preds, temperature=1.0):
+        # helper function to sample an index from a probability array
+        preds = np.asarray(preds).astype('float64')
+        preds = np.log(preds) / temperature
+        exp_preds = np.exp(preds)
+        preds = exp_preds / np.sum(exp_preds)
+        probs = np.random.multinomial(1, preds, 1)
+        return np.argmax(probs)
 
+    def test(self, file_name):
 
-def test(file_name):
+        X, y, window_size, vector_size = self.preprocess_file(file_name)
 
-    X, y, window_size, vector_size = preprocess_file(file_name)
+        model = load_model('lstm.hdf5')
 
-    model = load_model('lstm.hdf5')
+        preds = model.predict(X)
+        probs = []
 
-    preds = model.predict(X)
-    probs = sample(preds[0])
+        for pred in preds:
+            probs.append(self.sample(pred))
 
-    print(probs)
+        return probs
 
-    return probs
+    def sample_sentences(self, file_name):
+        probs = self.test(file_name)
+        sentences = []
+
+        for i in range(0, int(len(probs) / 10)):
+            prob = probs[i: i + 10]
+            sentence = []
+            for j in range(0, 10):
+                sentence.append(self.int_to_word[prob[j]])
+            sentences.append(' '.join(sentence))
+
+        return sentences
 
 
 if __name__ == '__main__':
-    train('data/shakespeare.txt')
-    test('data/shakespeare.txt')
 
+    LSTM_Generator = LSTMGenerator()
 
-
+    # LSTM_Generator.train('data/shakespeare.txt')
+    LSTMGenerator.sample_sentences(LSTM_Generator, 'data/shakespeare.txt')
