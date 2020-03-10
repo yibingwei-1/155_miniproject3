@@ -68,6 +68,7 @@ def read_syllable_from(syllable_path='./data/end_syllable.txt'):
     lines = file.readlines()
     syllable_list = []
     for line in lines:
+        line = line.strip()
         syllable_list.append(line.split(" "))
     return syllable_list
 
