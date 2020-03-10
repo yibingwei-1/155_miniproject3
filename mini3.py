@@ -9,7 +9,9 @@ from preprocess import (
 
 from write_poems import (
     count_sentence_syllables,
-    get_last_syllable
+    get_last_syllable,
+    truncate_sentence,
+    read_syllable_from
 )
 
 from HMM import unsupervised_HMM
@@ -33,17 +35,6 @@ print('Sample Naive Sentence:\n====================')
 print(sample_sentence(hmm, word_to_int, n_words=10))
 
 
-def read_syllable_from(syllable_path='./data/end_syllable.txt'):
-    if not os.path.exists(syllable_path):
-        extract_end_syllable.extract_syllable()
-    file = open(syllable_path, 'r')
-    lines = file.readlines()
-    syllable_list = []
-    for line in lines:
-        syllable_list.append(line.split(" "))
-    return syllable_list
-
-
 def write_naive_sonnet():
     sonnet = ''
     for i in range(14):
@@ -57,22 +48,24 @@ print (write_naive_sonnet() + '\n\n\n\n')
 
 # Poetry Generation
 
-def write_rhyming_sonnet():
+def write_rhyming_sonnet(word_to_int):
     sonnet = ''
     phoneme_sentences = {}
     syllable_lists = read_syllable_from()
     # generate 360 sentences of length 10
     count = 0
     while count < 360:
-        sentence = sample_sentence(hmm, word_to_int, n_words=10)
-        num_syllables = count_sentence_syllables(sentence)
-        if num_syllables == 10:
-            last_syllable = get_last_syllable(sentence)
-            phoneme_sentences[last_syllable] = sentence
-            count += 1
+        sentence = truncate_sentence(sample_sentence(hmm, word_to_int, n_words=10), word_to_int, syllable_lists)
+        if sentence:
+            num_syllables = count_sentence_syllables(sentence)
+            if num_syllables == 10:
+                last_syllable = get_last_syllable(sentence)
+                phoneme_sentences[last_syllable] = sentence
+                count += 1
 
     # get the structure
     structure = random.choice(syllable_lists)
+    print(structure)
     for i,syllable in enumerate(structure):
         if i % 4 == 0:
             sonnet += '\n'
@@ -80,6 +73,6 @@ def write_rhyming_sonnet():
     return sonnet
 
 print('Rhyming Sonet:\n====================')
-print(write_rhyming_sonnet() + '\n\n\n\n')
+print(write_rhyming_sonnet(word_to_int) + '\n\n\n\n')
 
 

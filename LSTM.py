@@ -2,6 +2,7 @@ from keras.layers import LSTM, Input, Dense
 from keras.optimizers import RMSprop
 from keras import Model
 from keras.models import load_model
+import write_poems
 import numpy as np
 import preprocess
 
@@ -11,6 +12,9 @@ class LSTMGenerator(object):
     def __init__(self):
         self.word_to_int = {}
         self.int_to_word = {}
+
+    def get_word_to_int(self):
+        return self.word_to_int
 
     def preprocess_file(self, file_name):
         poem_lists, quatrain_lists, volta_lists, couplet_lists, self.word_to_int, self.int_to_word = preprocess.parse_data(file_name)
@@ -116,4 +120,12 @@ if __name__ == '__main__':
     LSTM_Generator = LSTMGenerator()
 
     # LSTM_Generator.train('data/shakespeare.txt')
-    LSTMGenerator.sample_sentences(LSTM_Generator, 'data/shakespeare.txt')
+    sample_sentence = LSTMGenerator.sample_sentences(LSTM_Generator, 'data/shakespeare.txt')
+    syllable_dict = preprocess.syllables_interpreter('data/Syllable_dictionary.txt', LSTM_Generator.get_word_to_int())
+
+    for sentence in sample_sentence:
+        print(write_poems.truncate_sentence(sentence, LSTM_Generator.get_word_to_int(), syllable_dict))
+
+    # print(sample_sentence)
+
+

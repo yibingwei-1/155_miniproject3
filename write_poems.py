@@ -1,4 +1,6 @@
 import nltk
+import os
+import extract_end_syllable
 from nltk.corpus import cmudict
 # try:
 #     nltk.data.find('cmudict')
@@ -50,6 +52,17 @@ def count_sentence_syllables(sentence, word_id_dict, syllables_dict):
     return syllable_count
 
 
+def read_syllable_from(syllable_path='./data/end_syllable.txt'):
+    if not os.path.exists(syllable_path):
+        extract_end_syllable.extract_syllable()
+    file = open(syllable_path, 'r')
+    lines = file.readlines()
+    syllable_list = []
+    for line in lines:
+        syllable_list.append(line.split(" "))
+    return syllable_list
+
+
 def truncate_sentence(sentence, word_id_dict, syllables_dict):
     '''
     :param sentence: str, sentence
@@ -61,8 +74,12 @@ def truncate_sentence(sentence, word_id_dict, syllables_dict):
     words = sentence.split()
     syllable_count = 0
     for idx, cur_word in enumerate(words):
+        cur_word = cur_word.lower()
         word_id = word_id_dict[cur_word]
 
+        if cur_word not in word_id_dict:
+            print(cur_word)
+            return ""
         count_end = syllables_dict[word_id][1]
         count_not_end = syllables_dict[word_id][0]
 

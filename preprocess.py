@@ -10,7 +10,7 @@ def parse_line(line):
         if ord('A') <= ord(ch) <= ord('Z'):
             ch = ch.lower()
             pure_line += ch
-        elif ord('a') <= ord(ch) <= ord('z') or ch == ' ':
+        elif ord('a') <= ord(ch) <= ord('z') or ch == ' ' or ch == '\'' or ch == '-':
             pure_line += ch
 
     words = pure_line.split()
