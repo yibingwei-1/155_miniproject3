@@ -50,6 +50,30 @@ def count_sentence_syllables(sentence, word_id_dict, syllables_dict):
     return syllable_count
 
 
+def truncate_sentence(sentence, word_id_dict, syllables_dict):
+    '''
+    :param sentence: str, sentence
+    :param word_id_dict: dict
+    :param syllables_dict: dict
+    :return truncated sentence with exactly 10 syllables if it exists, else return empty string
+    '''
+    sentence = sentence.replace('.', '').replace('?', '')
+    words = sentence.split()
+    syllable_count = 0
+    for idx, cur_word in enumerate(words):
+        word_id = word_id_dict[cur_word]
+
+        count_end = syllables_dict[word_id][1]
+        count_not_end = syllables_dict[word_id][0]
+
+        if syllable_count + count_end == 10:
+            return " ".join(words[:idx+1])
+        elif syllable_count + count_end > 10:
+            return ""
+        elif syllable_count + count_not_end < 10:
+            syllable_count += count_not_end
+
+
 if __name__ == '__main__':
     word = 'love'
     print(get_last_syllable(word))

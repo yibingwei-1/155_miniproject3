@@ -23,7 +23,7 @@ from HMM_helper import (
 )
 
 # pre-porcessing
-poem_lists, uatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word = parse_data('data/shakespeare.txt')
+poem_lists, uatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word = parse_data('data/shakespeare_part.txt')
 
 # train
 hmm = unsupervised_HMM(poem_lists, n_states=20, N_iters=10)
