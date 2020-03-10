@@ -91,6 +91,25 @@ def truncate_sentence(sentence, word_id_dict, syllables_dict):
             syllable_count += count_not_end
 
 
+def format_poem(poem):
+    for i in range(0, 14):
+
+        for j in range(1, len(poem) - 1):
+            if poem[i][j] == 'i' and poem[i][j - 1] == ' ' and poem[i][j + 1] == ' ':
+                poem[i][j] = poem[i][j].upper()
+
+        if i == 4 or i == 8 or i == 12:
+            poem[i] += ':'
+        elif i == 14:
+            poem[i] += '.'
+        else:
+            poem[i] += ','
+
+        poem[i][0] = poem[i][0].upper()
+
+    return poem
+
+
 if __name__ == '__main__':
     word = 'love'
     print(get_last_syllable(word))
