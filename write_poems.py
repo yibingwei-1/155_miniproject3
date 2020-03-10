@@ -32,6 +32,15 @@ def get_last_syllable(input, tag='sentence'):
     syllable = cmudict.dict().get(cur_word, [])
     return syllable[0][-1] if syllable else ''
 
+def classify_sentence(sentences):
+    sentence_class = {}
+    for sentence in sentences:
+        sentence_end_syllable = get_last_syllable(sentence)
+        print(sentence_end_syllable)
+        print(sentence)
+        print('----------------')
+        sentence_class[sentence_end_syllable] = sentence
+    return sentence_class
 
 def count_sentence_syllables(sentence, word_id_dict, syllables_dict):
     '''
@@ -59,6 +68,7 @@ def read_syllable_from(syllable_path='./data/end_syllable.txt'):
     lines = file.readlines()
     syllable_list = []
     for line in lines:
+        line = line.strip()
         syllable_list.append(line.split(" "))
     return syllable_list
 
