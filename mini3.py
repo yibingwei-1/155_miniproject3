@@ -24,7 +24,7 @@ from HMM_helper import (
 # pre-porcessing
 poem_lists, uatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word = parse_data('data/shakespeare.txt')
 
-# train
+# train HMM
 hmm = unsupervised_HMM(poem_lists, n_states=20, N_iters=10)
 
 # sample naive sentence
