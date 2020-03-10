@@ -15,6 +15,7 @@ def get_last_syllable(input, word_syllable_dict, tag='sentence'):
     '''
 
     :param input: str, a word with tag being 'word' or a sentence with tag being 'sentence',
+    :param word_syllable_dict: a dictionary with key = word, value = last syllable
     :param tag: demonstrate the type of input, 'word' or 'sentence'
     :return: str, the last syllable of current sentence or word
     '''
