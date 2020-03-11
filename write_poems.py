@@ -109,24 +109,16 @@ def truncate_sentence(sentence, word_id_dict, syllables_dict):
 
 
 def format_poem(poem):
-    result = []
     for i in range(0, 14):
         poem[i] = poem[i].replace(' i ', ' I ')
-        # tmp_str = ""
-        # for j in range(1, len(poem) - 1):
-        #     if poem[i][j] == 'i' and poem[i][j - 1] == ' ' and poem[i][j + 1] == ' ':
-        #         tmp = poem[i][j]
-        #         poem[i] = poem[i][:j] + tmp.upper() + poem[i][j + 1:]
 
-        if i == 4 or i == 8 or i == 12:
+        if i == 3 or i == 7 or i == 11:
             poem[i] += ':'
-        elif i == 14:
+        elif i == 13:
             poem[i] += '.'
         else:
             poem[i] += ','
-
-        # tmp = poem[i][0]
-        # poem[i] = tmp.upper() + poem[i][1:]
+        
         poem[i] = poem[i].capitalize()
     return poem
 
