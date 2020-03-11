@@ -2,6 +2,7 @@ from keras.layers import LSTM, Input, Dense
 from keras.optimizers import RMSprop
 from keras import Model
 from keras.models import load_model
+from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 import write_poems
 import numpy as np
 import preprocess
@@ -68,11 +69,36 @@ class LSTMGenerator(object):
             optimizer=optimizer
         )
 
+        callbacks = [
+            ModelCheckpoint(
+                'lstm_best.hdf5',
+                monitor='loss',
+                verbose=1,
+                save_best_only=True,
+                mode='auto',
+                period=1
+            ),
+            EarlyStopping(
+                monitor='loss',
+                patience=10,
+                mode='auto',
+                verbose=1
+            ),
+            ReduceLROnPlateau(
+                monitor='loss',
+                patience=5,
+                verbose=1,
+                mode='auto',
+                factor=0.1
+            )
+        ]
+
         model.fit(
             x=X,
             y=y,
             batch_size=16,
-            epochs=1
+            epochs=100,
+            callbacks=callbacks
         )
 
         model.save('lstm.hdf5')
@@ -119,13 +145,13 @@ if __name__ == '__main__':
 
     LSTM_Generator = LSTMGenerator()
 
-    # LSTM_Generator.train('data/shakespeare.txt')
-    sample_sentence = LSTMGenerator.sample_sentences(LSTM_Generator, 'data/shakespeare.txt')
-    syllable_dict = preprocess.syllables_interpreter('data/Syllable_dictionary.txt', LSTM_Generator.get_word_to_int())
-
-    for sentence in sample_sentence:
-        print(write_poems.truncate_sentence(sentence, LSTM_Generator.get_word_to_int(), syllable_dict))
-
+    LSTM_Generator.train('data/shakespeare.txt')
+    # sample_sentence = LSTMGenerator.sample_sentences(LSTM_Generator, 'data/shakespeare.txt')
+    # syllable_dict = preprocess.syllables_interpreter('data/Syllable_dictionary.txt', LSTM_Generator.get_word_to_int())
+    #
+    # for sentence in sample_sentence:
+    #     print(write_poems.truncate_sentence(sentence, LSTM_Generator.get_word_to_int(), syllable_dict))
+    #
     # print(sample_sentence)
 
 
