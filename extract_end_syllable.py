@@ -1,5 +1,6 @@
-from preprocess import parse_line
 import write_poems
+from preprocess import parse_line
+
 
 def extract_syllable():
     '''
@@ -45,9 +46,11 @@ def extract_syllable_words():
     output_file = open(output_name, 'a')
     for line in lines:
         line = line.strip().split()
-        word = line[-1]
+        word = line[0]
         syllable = write_poems.get_last_syllable(word, 'word')
-        output_file.write("%s %s\n" % (word, syllable))
+        if syllable:
+            output_file.write("%s %s\n" % (word, syllable))
+            print("%s %s\n" % (word, syllable))
     output_file.close()
 
 

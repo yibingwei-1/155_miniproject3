@@ -11,7 +11,7 @@ from write_poems import (
     count_sentence_syllables,
     get_last_syllable,
     truncate_sentence,
-    read_syllable_from
+    read_syllable_template
 )
 
 from HMM import unsupervised_HMM
@@ -51,7 +51,7 @@ print (write_naive_sonnet() + '\n\n\n\n')
 def write_rhyming_sonnet(word_to_int):
     sonnet = ''
     phoneme_sentences = {}
-    syllable_lists = read_syllable_from()
+    syllable_lists = read_syllable_template()
     # generate 360 sentences of length 10
     count = 0
     while count < 360:
