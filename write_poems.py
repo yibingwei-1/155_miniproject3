@@ -1,5 +1,6 @@
 import os
 import extract_end_syllable
+from collections import defaultdict
 
 def get_last_word(sentence):
     '''
@@ -24,7 +25,7 @@ def get_last_syllable(input, word_syllable_dict, tag='sentence'):
 
 
 def classify_sentence(sentences):
-    sentence_class = {}
+    sentence_class = defaultdict(list)
     word_syllable_dict = read_word_syllable()
 
     for sentence in sentences:
@@ -32,7 +33,7 @@ def classify_sentence(sentences):
         print(sentence_end_syllable)
         print(sentence)
         print('----------------')
-        sentence_class[sentence_end_syllable] = sentence
+        sentence_class[sentence_end_syllable].append(sentence)
     return sentence_class
 
 
@@ -108,11 +109,14 @@ def truncate_sentence(sentence, word_id_dict, syllables_dict):
 
 
 def format_poem(poem):
+    result = []
     for i in range(0, 14):
-
-        for j in range(1, len(poem) - 1):
-            if poem[i][j] == 'i' and poem[i][j - 1] == ' ' and poem[i][j + 1] == ' ':
-                poem[i][j] = poem[i][j].upper()
+        poem[i] = poem[i].replace(' i ', ' I ')
+        # tmp_str = ""
+        # for j in range(1, len(poem) - 1):
+        #     if poem[i][j] == 'i' and poem[i][j - 1] == ' ' and poem[i][j + 1] == ' ':
+        #         tmp = poem[i][j]
+        #         poem[i] = poem[i][:j] + tmp.upper() + poem[i][j + 1:]
 
         if i == 4 or i == 8 or i == 12:
             poem[i] += ':'
@@ -121,8 +125,9 @@ def format_poem(poem):
         else:
             poem[i] += ','
 
-        poem[i][0] = poem[i][0].upper()
-
+        # tmp = poem[i][0]
+        # poem[i] = tmp.upper() + poem[i][1:]
+        poem[i] = poem[i].capitalize()
     return poem
 
 

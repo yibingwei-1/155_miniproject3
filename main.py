@@ -15,7 +15,10 @@ random_syllable_template = random.choice(syllable_template)
 print(random_syllable_template)
 
 sonnet = []
-for i, syllable in enumerate(syllable_template):
+for syllable in random_syllable_template:
     sonnet.append(random.choice(sentence_dict[syllable]))
-print(sonnet)
+
+sonnet = write_poems.format_poem(sonnet)
+for s in sonnet:
+    print(s)
 
