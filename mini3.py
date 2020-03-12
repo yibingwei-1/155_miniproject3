@@ -31,12 +31,12 @@ from HMM_helper import (
 poem_lists, uatrain_lists, volta_lists, couplet_lists, word_to_int, int_to_word = parse_data('./data/shakespeare.txt')
 
 # train
-hmm = unsupervised_HMM(poem_lists, n_states=30, N_iters=50)
+# hmm = unsupervised_HMM(poem_lists, n_states=30, N_iters=100)
 
-# sample naive sentence
-print('Sample Naive Sentence:\n====================')
-print(sample_sentence(hmm, word_to_int, n_words=10))
-print('\n\n\n\n')
+# # sample naive sentence
+# print('Sample Naive Sentence:\n====================')
+# print(sample_sentence(hmm, word_to_int, n_words=10))
+# print('\n\n\n\n')
 
 
 def write_naive_sonnet():
@@ -47,8 +47,14 @@ def write_naive_sonnet():
         sonnet += sample_sentence(hmm, word_to_int, 10) + ',\n'
     return sonnet
 
-print('Naive Sonet:\n====================')
-print (write_naive_sonnet() + '\n\n\n\n')
+# unsupervised
+num_states = [1,5,10,15,20,30,50]
+for n in num_states:
+    hmm = unsupervised_HMM(poem_lists, n_states=n, N_iters=50)
+    print('Naive Sonet (number of hidden states = %d)\n===================='%n)
+    for i in range(3):
+        print('Sonet #%d:\n'%(i+1))
+        print (write_naive_sonnet() + '\n\n\n\n')
 
 # Poetry Generation
 
@@ -85,7 +91,7 @@ def write_rhyming_sonnet(word_to_int):
             sonnet += sentence + ',\n'
         return sonnet
 
-print('Rhyming Sonet:\n====================')
-print(write_rhyming_sonnet(word_to_int) + '\n\n\n\n')
+# print('Rhyming Sonet:\n====================')
+# print(write_rhyming_sonnet(word_to_int) + '\n\n\n\n')
 
 
