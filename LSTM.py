@@ -1,5 +1,5 @@
-from keras.layers import LSTM, Input, Dense
-from keras.optimizers import RMSprop
+from keras.layers import LSTM, Input, Dense, Lambda
+from keras.optimizers import RMSprop, Adam
 from keras import Model
 from keras.models import load_model
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
@@ -14,60 +14,76 @@ class LSTMGenerator(object):
         self.word_to_int = {}
         self.int_to_word = {}
 
+        self.char_to_int = {}
+        self.int_to_char = {}
+
+        self.window_size = 40
+        self.vector_size = 0
+
     def get_word_to_int(self):
         return self.word_to_int
 
     def preprocess_file(self, file_name):
-        poem_lists, quatrain_lists, volta_lists, couplet_lists, self.word_to_int, self.int_to_word = preprocess.parse_data(file_name)
-        window_size = 10
-        vector_size = len(self.word_to_int)
+        # poem_lists, quatrain_lists, volta_lists, couplet_lists, self.word_to_int, self.int_to_word = preprocess.parse_data(file_name)
+        self.window_size = 40
 
-        total_sequence = []
-        for poem in poem_lists:
-            total_sequence.extend(poem)
+        pure_sonnets_file = open(file_name)
+        pure_sonnets = pure_sonnets_file.read()
+        pure_sonnets_file.close()
+
+        characters = sorted(list(set(pure_sonnets)))
+        self.vector_size = len(characters)
+
+        for i, ch in enumerate(characters):
+            self.int_to_char[i] = ch
+            self.char_to_int[ch] = i
 
         X_raw = []
         y_raw = []
-        for i in range(0, len(total_sequence) - window_size):
-            X_raw.append(total_sequence[i: i + window_size])
-            y_raw.append(total_sequence[i + window_size])
 
-        X = np.zeros((len(total_sequence) - window_size, window_size, vector_size))
-        y = np.zeros((len(total_sequence) - window_size, vector_size))
+        for i in range(0, len(pure_sonnets) - self.window_size):
+            X_raw.append([self.char_to_int[ch] for ch in pure_sonnets[i: i + self.window_size]])
+            y_raw.append(self.char_to_int[pure_sonnets[i + self.window_size]])
 
-        for i in range(0, len(total_sequence) - window_size):
+        X = np.zeros((len(X_raw), self.window_size, len(characters)))
+        y = np.zeros((len(X_raw), len(characters)))
+
+        for i in range(0, len(X_raw)):
             y[i, y_raw[i]] = 1
-            for j in range(0, window_size):
+            for j in range(0, self.window_size):
                 X[i, j, X_raw[i][j]] = 1
 
-        return X, y, window_size, vector_size
+        return X, y
 
     def train(self, file_name):
 
-        X, y, window_size, vector_size = self.preprocess_file(file_name)
+        X, y = self.preprocess_file(file_name)
 
-        input_data = Input(shape=(window_size, vector_size,))
+        input_data = Input(shape=(self.window_size, self.vector_size,))
 
         lstm = LSTM(
-            units=200,
+            units=150,
             activation='tanh',
             recurrent_activation='sigmoid',
             use_bias=True
         )(input_data)
 
         output = Dense(
-            units=vector_size,
+            units=self.vector_size,
             activation='softmax'
         )(lstm)
 
         model = Model(input_data, output)
 
-        optimizer = RMSprop(learning_rate=0.01)
+        optimizer = Adam(learning_rate=0.01)
 
         model.compile(
             loss='categorical_crossentropy',
-            optimizer=optimizer
+            optimizer=optimizer,
+            metrics=['accuracy']
         )
+
+        model.summary()
 
         callbacks = [
             ModelCheckpoint(
@@ -80,13 +96,13 @@ class LSTMGenerator(object):
             ),
             EarlyStopping(
                 monitor='loss',
-                patience=10,
+                patience=5,
                 mode='auto',
                 verbose=1
             ),
             ReduceLROnPlateau(
                 monitor='loss',
-                patience=5,
+                patience=3,
                 verbose=1,
                 mode='auto',
                 factor=0.1
@@ -96,7 +112,8 @@ class LSTMGenerator(object):
         model.fit(
             x=X,
             y=y,
-            batch_size=16,
+            shuffle=True,
+            batch_size=32,
             epochs=100,
             callbacks=callbacks
         )
@@ -113,31 +130,47 @@ class LSTMGenerator(object):
         probs = np.random.multinomial(1, preds, 1)
         return np.argmax(probs)
 
-    def test(self, file_name):
+    def sample_sentences(self, file_name, seed="shall i compare thee to a summer's day?\n"):
+        X, y = self.preprocess_file(file_name)
 
-        X, y, window_size, vector_size = self.preprocess_file(file_name)
+        input_data = Input(shape=(self.window_size, self.vector_size,))
 
-        model = load_model('lstm.hdf5')
+        lstm = LSTM(
+            units=150,
+            activation='tanh',
+            recurrent_activation='sigmoid',
+            use_bias=True
+        )(input_data)
 
-        preds = model.predict(X)
-        probs = []
+        lstm = Lambda(
+            lambda x: x / 0.75
+        )(lstm)
 
-        for pred in preds:
-            probs.append(self.sample(pred))
+        output = Dense(
+            units=self.vector_size,
+            activation='softmax'
+        )(lstm)
 
-        return probs
+        model = Model(input_data, output)
+        model.load_weights('lstm_best_model_weights.hdf5')
 
-    def sample_sentences(self, file_name):
-        probs = self.test(file_name)
-        sentences = []
+        sentences = ''
+        # model = load_model('lstm_best.hdf5')
 
-        for i in range(0, int(len(probs) / 10)):
-            prob = probs[i: i + 10]
-            sentence = []
-            for j in range(0, 10):
-                sentence.append(self.int_to_word[prob[j]])
-            sentences.append(' '.join(sentence))
+        X = np.zeros((1, self.window_size, self.vector_size))
+        for i, ch in enumerate(seed):
+            X[0, i, self.char_to_int[ch]] = 1
 
+        for _ in range(1000):
+            preds = model.predict(X)
+            prob = np.argmax(preds)
+
+            sentences += self.int_to_char[prob]
+            new_X = np.zeros((1, 1, self.vector_size))
+            new_X[0, 0, prob] = 1
+            X = np.concatenate((X[:, 1:, :], new_X), axis=1)
+
+        print(sentences)
         return sentences
 
 
@@ -145,13 +178,11 @@ if __name__ == '__main__':
 
     LSTM_Generator = LSTMGenerator()
 
-    LSTM_Generator.train('data/shakespeare.txt')
-    # sample_sentence = LSTMGenerator.sample_sentences(LSTM_Generator, 'data/shakespeare.txt')
+    # LSTM_Generator.train('data/pure_shakespeare.txt')
+    sample_sentence = LSTMGenerator.sample_sentences(LSTM_Generator, 'data/pure_shakespeare.txt')
     # syllable_dict = preprocess.syllables_interpreter('data/Syllable_dictionary.txt', LSTM_Generator.get_word_to_int())
     #
     # for sentence in sample_sentence:
     #     print(write_poems.truncate_sentence(sentence, LSTM_Generator.get_word_to_int(), syllable_dict))
     #
     # print(sample_sentence)
-
-

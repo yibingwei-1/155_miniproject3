@@ -118,7 +118,7 @@ def format_poem(poem):
             poem[i] += '.'
         else:
             poem[i] += ','
-        
+
         poem[i] = poem[i].capitalize()
     return poem
 
